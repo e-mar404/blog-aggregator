@@ -10,18 +10,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.arguments) != 1 {
 		return fmt.Errorf("command should only have one argument: gator follow url")
-	}
-
-	userName := sql.NullString { 
-		String: s.config.CurrentUserName,
-		Valid: true,
-	}
-	user, err := s.db.GetUser(context.Background(), userName)
-	if err != nil {
-		return err
 	}
 
 	feedUrl := sql.NullString { 

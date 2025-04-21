@@ -2,24 +2,15 @@ package main
 
 import (
 	"context"
-	"database/sql"
+	"e-mar404/gator/internal/database"
 	"fmt"
 
 	"github.com/google/uuid"
 )
 
-func handlerFollowing(s *state, cmd command) error {
+func handlerFollowing(s *state, cmd command, user database.User) error {
 	if len(cmd.arguments) != 0 {
 		return fmt.Errorf("there should no be any arguments")
-	}
-	
-	userName := sql.NullString {
-		String: s.config.CurrentUserName,
-		Valid: true,
-	}
-	user, err := s.db.GetUser(context.Background(), userName) 
-	if err != nil {
-		return err
 	}
 	
 	userID := uuid.NullUUID {
@@ -27,6 +18,9 @@ func handlerFollowing(s *state, cmd command) error {
 		Valid: true,
 	}
 	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), userID)
+	if err != nil {
+		return err
+	}
 
 	fmt.Printf("Feeds following for %s:\n\n", s.config.CurrentUserName)
 	for _, feedFollow := range feedFollows {

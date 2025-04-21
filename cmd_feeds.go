@@ -10,7 +10,6 @@ func handlerFeeds (s *state, cmd command) error {
 		return fmt.Errorf("there shouln't be any args for this command")
 	}
 
-	// list feeds
 	feeds, err := s.db.GetFeeds(context.Background())
 	if err != nil {
 		return err

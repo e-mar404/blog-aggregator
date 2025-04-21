@@ -10,18 +10,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.arguments) != 2 {
 		return fmt.Errorf("expect exactly 2 arguments, name and url")
-	}
-
-	name := sql.NullString {
-		String: s.config.CurrentUserName,
-		Valid: true,
-	}
-	curUser, err := s.db.GetUser(context.Background(), name) 
-	if err != nil {
-		return fmt.Errorf("error getting cur user: %v", err)
 	}
 
 	params := database.CreateFeedParams {
@@ -35,7 +26,7 @@ func handlerAddFeed(s *state, cmd command) error {
 			Valid: true,
 		},
 		UserID: uuid.NullUUID{
-			UUID: curUser.ID,
+			UUID: user.ID,
 			Valid: true,
 		},
 		CreatedAt: time.Now(),
@@ -46,7 +37,7 @@ func handlerAddFeed(s *state, cmd command) error {
 	feedFollowParams := database.CreateFeedFollowParams {
 		ID: uuid.New(),
 		UserID: uuid.NullUUID {
-			UUID: curUser.ID,
+			UUID: user.ID,
 			Valid: true,
 		},
 		FeedID: uuid.NullUUID {
