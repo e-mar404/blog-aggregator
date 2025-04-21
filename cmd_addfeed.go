@@ -11,12 +11,10 @@ import (
 )
 
 func handlerAddFeed(s *state, cmd command) error {
-	// check there are 2 args (name, url)
 	if len(cmd.arguments) != 2 {
 		return fmt.Errorf("expect exactly 2 arguments, name and url")
 	}
 
-	// make params
 	name := sql.NullString {
 		String: s.config.CurrentUserName,
 		Valid: true,
@@ -45,7 +43,27 @@ func handlerAddFeed(s *state, cmd command) error {
 	}
 	feed, err := s.db.CreateFeed(context.Background(), params)	
 
-	fmt.Printf("%s\n", feed)
+	feedFollowParams := database.CreateFeedFollowParams {
+		ID: uuid.New(),
+		UserID: uuid.NullUUID {
+			UUID: curUser.ID,
+			Valid: true,
+		},
+		FeedID: uuid.NullUUID {
+			UUID: feed.ID,
+			Valid: true,
+		},
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, err = s.db.CreateFeedFollow(context.Background(), feedFollowParams)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Following feed: %s\nFor cur user: %s\n", feed.Name.String, s.config.CurrentUserName)
+	fmt.Printf("%v\n", feed)
 
 	return nil
 }

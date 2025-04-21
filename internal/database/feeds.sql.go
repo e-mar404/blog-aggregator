@@ -56,6 +56,162 @@ func (q *Queries) CreateFeed(ctx context.Context, arg CreateFeedParams) (Feed, e
 	return i, err
 }
 
+const createFeedFollow = `-- name: CreateFeedFollow :one
+WITH follow_feed_record AS (
+  INSERT INTO feed_follows (id, user_id, feed_id, created_at, updated_at)
+  VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5
+  )
+  RETURNING id, user_id, feed_id, created_at, updated_at
+)
+SELECT follow_feed_record.id, follow_feed_record.user_id, feed_id, follow_feed_record.created_at, follow_feed_record.updated_at, users.id, users.name, users.created_at, users.updated_at, feeds.id, feeds.name, url, feeds.user_id, feeds.created_at, feeds.updated_at, users.name AS user_name, feeds.name AS feed_name
+FROM follow_feed_record
+JOIN users
+ON follow_feed_record.user_id=users.id
+JOIN feeds 
+ON follow_feed_record.feed_id=feeds.id
+`
+
+type CreateFeedFollowParams struct {
+	ID        uuid.UUID
+	UserID    uuid.NullUUID
+	FeedID    uuid.NullUUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type CreateFeedFollowRow struct {
+	ID          uuid.UUID
+	UserID      uuid.NullUUID
+	FeedID      uuid.NullUUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	ID_2        uuid.UUID
+	Name        sql.NullString
+	CreatedAt_2 time.Time
+	UpdatedAt_2 time.Time
+	ID_3        uuid.UUID
+	Name_2      sql.NullString
+	Url         sql.NullString
+	UserID_2    uuid.NullUUID
+	CreatedAt_3 time.Time
+	UpdatedAt_3 time.Time
+	UserName    sql.NullString
+	FeedName    sql.NullString
+}
+
+func (q *Queries) CreateFeedFollow(ctx context.Context, arg CreateFeedFollowParams) (CreateFeedFollowRow, error) {
+	row := q.db.QueryRowContext(ctx, createFeedFollow,
+		arg.ID,
+		arg.UserID,
+		arg.FeedID,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
+	var i CreateFeedFollowRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.FeedID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ID_2,
+		&i.Name,
+		&i.CreatedAt_2,
+		&i.UpdatedAt_2,
+		&i.ID_3,
+		&i.Name_2,
+		&i.Url,
+		&i.UserID_2,
+		&i.CreatedAt_3,
+		&i.UpdatedAt_3,
+		&i.UserName,
+		&i.FeedName,
+	)
+	return i, err
+}
+
+const getFeedByUrl = `-- name: GetFeedByUrl :one
+SELECT id, name, url, user_id, created_at, updated_at FROM feeds
+WHERE feeds.url=$1
+`
+
+func (q *Queries) GetFeedByUrl(ctx context.Context, url sql.NullString) (Feed, error) {
+	row := q.db.QueryRowContext(ctx, getFeedByUrl, url)
+	var i Feed
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Url,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getFeedFollowsForUser = `-- name: GetFeedFollowsForUser :many
+SELECT feed_follows.id, feed_follows.user_id, feed_id, feed_follows.created_at, feed_follows.updated_at, feeds.id, name, url, feeds.user_id, feeds.created_at, feeds.updated_at, feeds.name AS feed_name FROM feed_follows
+JOIN feeds
+ON feed_follows.feed_id=feeds.id
+WHERE feed_follows.user_id=$1
+`
+
+type GetFeedFollowsForUserRow struct {
+	ID          uuid.UUID
+	UserID      uuid.NullUUID
+	FeedID      uuid.NullUUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	ID_2        uuid.UUID
+	Name        sql.NullString
+	Url         sql.NullString
+	UserID_2    uuid.NullUUID
+	CreatedAt_2 time.Time
+	UpdatedAt_2 time.Time
+	FeedName    sql.NullString
+}
+
+func (q *Queries) GetFeedFollowsForUser(ctx context.Context, userID uuid.NullUUID) ([]GetFeedFollowsForUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, getFeedFollowsForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFeedFollowsForUserRow
+	for rows.Next() {
+		var i GetFeedFollowsForUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.FeedID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ID_2,
+			&i.Name,
+			&i.Url,
+			&i.UserID_2,
+			&i.CreatedAt_2,
+			&i.UpdatedAt_2,
+			&i.FeedName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getFeeds = `-- name: GetFeeds :many
 SELECT feeds.name AS feed_name, feeds.url AS feed_url, users.name AS user_name FROM feeds
 JOIN users
