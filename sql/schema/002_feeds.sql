@@ -4,6 +4,7 @@ CREATE TABLE feeds (
   name TEXT UNIQUE,
   url TEXT UNIQUE,
   user_id UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  last_fetched_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL
 );
@@ -18,5 +19,5 @@ CREATE TABLE feed_follows (
 );
 
 -- +goose Down
-DROP TABLE feeds;
-DROP TABLE feed_follows;
+DROP TABLE feeds CASCADE;
+DROP TABLE feed_follows CASCADE;

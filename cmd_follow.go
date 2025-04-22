@@ -24,7 +24,7 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 		return err
 	}
 
-	params := database.CreateFeedFollowParams {
+	feedFollowParams := database.CreateFeedFollowParams {
 		ID: uuid.New(),
 		UserID: uuid.NullUUID {
 			UUID: user.ID,
@@ -38,12 +38,13 @@ func handlerFollow(s *state, cmd command, user database.User) error {
 		UpdatedAt: time.Now(),
 	}
 
-	_, err = s.db.CreateFeedFollow(context.Background(), params)
+	_, err = s.db.CreateFeedFollow(context.Background(), feedFollowParams)
 	if err != nil {
 		return err
 	}
 
 	fmt.Printf("Following feed: %s\nFor cur user: %s\n", feed.Name.String, s.config.CurrentUserName)
+	fmt.Printf("%v\n", feed)
 
 	return nil
 }
