@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"e-mar404/gator/internal/database"
 	"fmt"
 
+	"github.com/e-mar404/gator/internal/database"
 	"github.com/google/uuid"
 )
 

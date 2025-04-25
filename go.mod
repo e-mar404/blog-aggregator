@@ -1,4 +1,4 @@
-module e-mar404/gator
+module github.com/e-mar404/gator
 
 go 1.23.4
 

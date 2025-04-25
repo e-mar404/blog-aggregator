@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"database/sql"
-	"e-mar404/gator/internal/database"
 	"fmt"
 
+	"github.com/e-mar404/gator/internal/database"
 	"github.com/google/uuid"
 )
 

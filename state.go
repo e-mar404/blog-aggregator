@@ -1,8 +1,8 @@
 package main
 
 import (
-	"e-mar404/gator/internal/config"
-	"e-mar404/gator/internal/database"
+	"github.com/e-mar404/gator/internal/config"
+	"github.com/e-mar404/gator/internal/database"
 )
 
 type state struct {

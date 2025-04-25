@@ -2,11 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"e-mar404/gator/internal/config"
-	"e-mar404/gator/internal/database"
 	"fmt"
 	"os"
 
+	"github.com/e-mar404/gator/internal/config"
+	"github.com/e-mar404/gator/internal/database"
 	_ "github.com/lib/pq"
 )
 
